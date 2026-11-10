@@ -130,9 +130,15 @@ def load_to_bigquery(records: list[dict]) -> None:
                 )
         """
 
+        
         merge_job = client.query(merge_sql)
-        merge_job.result()
 
+        try:
+            merge_job.result()
+        except Exception as error:
+            print(f"BigQuery MERGE failed: {error}")
+            print(f"BigQuery job ID: {merge_job.job_id}")
+            raise
         print(
             f"Successfully merged {len(records)} records into {destination}."
         )
