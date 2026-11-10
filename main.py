@@ -46,7 +46,7 @@ def read_sales_csv(file_path: Path) -> list[dict]:
 def load_to_bigquery(records: list[dict]) -> None:
     """Load transformed sales records into BigQuery."""
 
-    project_id = os.environ["GCP_PROJECT_ID"]
+    project_id = os.environ["project-09a7fa74-88ba-427a-b50"]
     dataset_id = os.environ.get("BQ_DATASET", "sales_cicd")
     table_id = os.environ.get("BQ_TABLE", "sales_raw")
 
