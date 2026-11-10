@@ -16,10 +16,19 @@ def read_sales_csv(file_path: Path) -> list[dict]:
 
     with file_path.open(
         mode="r",
-        encoding="utf-8",
+        encoding="utf-8-sig",
         newline=""
     ) as file:
         reader = csv.DictReader(file)
+
+        # Remove invisible BOM characters and surrounding spaces
+        if reader.fieldnames:
+            reader.fieldnames = [
+                field.strip().lstrip("\ufeff")
+                for field in reader.fieldnames
+            ]
+
+        print(f"Detected CSV headers: {reader.fieldnames!r}")
 
         expected_fields = {
             "order_id",
