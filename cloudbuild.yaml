@@ -1,0 +1,53 @@
+
+steps:
+  # 1. Install dependencies and run automated tests
+  - name: python:3.13-slim
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        pip install --no-cache-dir -r requirements.txt
+        python -m unittest discover -s tests -v
+
+  # 2. Build and publish the application using Buildpacks
+  - name: gcr.io/k8s-skaffold/pack
+    entrypoint: pack
+    args:
+      - build
+      - europe-west2-docker.pkg.dev/project-09a7fa74-88ba-427a-b50/sales-etl-repo/sales-etl:$COMMIT_SHA
+      - --builder
+      - gcr.io/buildpacks/builder:latest
+      - --network
+      - cloudbuild
+      - --env
+      - GOOGLE_ENTRYPOINT=python main.py
+      - --publish
+
+  # 3. Make the published image available to Cloud Build
+  - name: gcr.io/cloud-builders/docker
+    entrypoint: pack
+    args:
+      - pull
+      - europe-west2-docker.pkg.dev/project-09a7fa74-88ba-427a-b50/sales-etl-repo/sales-etl:$COMMIT_SHA
+
+  # 4. Deploy or update the Cloud Run Job
+  - name: gcr.io/google.com/cloudsdktool/google-cloud-cli:stable
+    entrypoint: gcloud
+    args:
+      - run
+      - jobs
+      - deploy
+      - sales-etl-job
+      - --image=europe-west2-docker.pkg.dev/project-09a7fa74-88ba-427a-b50/sales-etl-repo/sales-etl:$COMMIT_SHA
+      - --region=europe-west2
+      - --service-account=sales-etl-runtime@project-09a7fa74-88ba-427a-b50.iam.gserviceaccount.com
+      - --set-env-vars=GCP_PROJECT_ID=project-09a7fa74-88ba-427a-b50,BQ_DATASET=sales_cicd,BQ_TABLE=sales_raw
+      - --tasks=1
+      - --max-retries=1
+      - --task-timeout=10m
+
+images:
+  - europe-west2-docker.pkg.dev/project-09a7fa74-88ba-427a-b50/sales-etl-repo/sales-etl:$COMMIT_SHA
+
+options:
+  logging: CLOUD_LOGGING_ONLY
