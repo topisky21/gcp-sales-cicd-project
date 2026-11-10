@@ -1,0 +1,7 @@
+
+order_id,order_date,product,quantity,unit_price
+ORD-001,2026-11-01,Laptop,2,750.50
+ORD-002,2026-11-02,Monitor,3,180.00
+ORD-003,2026-11-03,Keyboard,5,45.99
+ORD-004,2026-11-04,Mouse,10,19.50
+ORD-005,2026-11-05,Headphones,4,65.75
